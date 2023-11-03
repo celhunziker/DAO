@@ -1,9 +1,9 @@
 from libro import Libro
 from socio import Socio
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
 def Prestamo(Socio, Libro):
-    def def __init__(self, idPrestamo, fechaPrestamo, diasDevolucion, diasRetraso, devuelto):
+    def __init__(self, idPrestamo, fechaPrestamo, diasDevolucion, diasRetraso, devuelto):
         self._idPrestamo = idPrestamo
         self._fechaPrestamo = fechaPrestamo
         self._diasDevolucion = diasDevolucion
@@ -22,7 +22,7 @@ def Prestamo(Socio, Libro):
     def diasRetraso(self):
         if fechaPrestamo.date + timedelta(days=diasDevolucion) <= datetime.now().date:
             return 0
-        else
+        else:
             retraso = datetime.now().date - (fechaPrestamo.date + timedelta(days=diasDevolucion))
             return retraso.days
     
