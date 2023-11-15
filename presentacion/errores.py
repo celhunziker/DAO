@@ -37,3 +37,28 @@ class LibroExistente(Exception):
         self._message = message
         super().__init__(self._message)
     
+class LibroInexistente(Exception):
+    """Se dispara cuando el codigo del libro no existe.
+    Atributos:
+    codigo -- codigo que disparó el error
+    message -- explicación del error
+    """
+    def __init__(self,
+        codigo,
+        message="El libro no existe"):
+        self._codigo = codigo
+        self._message = message
+        super().__init__(self._message)
+        
+class PrestamoInexistente(Exception):
+    """Se dispara cuando el codigo del libro no existe.
+    Atributos:
+    codigo -- codigo que disparó el error
+    message -- explicación del error
+    """
+    def __init__(self,
+        codigo,
+        message="El Prestamo no existe"):
+        self._codigo = codigo
+        self._message = message
+        super().__init__(self._message)

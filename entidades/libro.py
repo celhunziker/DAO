@@ -7,7 +7,7 @@ class Libro:
         
     @property
     def codigo(self):
-        return self._legajo
+        return self._codigo
     
     @property
     def titulo(self):
@@ -24,14 +24,7 @@ class Libro:
     def __str__(self) -> str:
         return f"Datos del Libro:\n\tCódigo: {self.codigo}\n\tTítulo: {self.titulo}\n\tPrecio de Reposición: ${str(self.precioReposicion)}\n\tEstado: {self.estado}"
     
-    def estadoDisponible(self):
-        self._estado = "DISPONIBLE"
-        
-    def estadoPrestado(self):
-        self._estado = "PRESTADO"
     
-    def estadoExtraviado(self):
-        self._estado = "EXTRAVIADO"
         
     #para ver si esta extraviado tenemos que ingresar a bd y verificar si hay algun prestamo con su codigo y que más de 30 días de demora.
     
