@@ -1,5 +1,7 @@
+
+
 class Socio:
-    def __init__(self, nombre, numeroSocio):
+    def __init__(self, nombre : str, numeroSocio : int):
         self._nombre = nombre
         self._numeroSocio = numeroSocio
         

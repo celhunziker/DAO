@@ -1,7 +1,9 @@
 from bdManager import DatabaseManager
+from socio import *
+from libro import *
 
 # Funciones para la administración de libros
-def insertar_libro(libro):
+def insertar_libro(libro : Libro):
     db_manager = DatabaseManager()
     codigo = int(libro.codigo)
     titulo = str(libro.titulo)
@@ -11,7 +13,7 @@ def insertar_libro(libro):
             f"VALUES ({codigo}, '{titulo}', {precio_reposicion}, '{estado}', 0)"
     db_manager.actualizar(query)
 
-def actualizar_libro(libro):
+def actualizar_libro(libro : Libro):
     db_manager = DatabaseManager()
     codigo = int(libro.codigo)
     titulo = str(libro.titulo)
@@ -20,10 +22,10 @@ def actualizar_libro(libro):
     query = f"UPDATE libros SET titulo = '{titulo}', precioReposicion = {precio_reposicion}, estado = '{estado}' WHERE codigo = {codigo}"
     db_manager.actualizar(query)
 
-def eliminar_libro(libro):
+def eliminar_libro(libro : Libro):
     db_manager = DatabaseManager()
     codigo = int(libro.codigo)
-    query = f"UPDATE libros SET borrado = 1 WHERE codigo = {codigo}"
+    query = f"DELETE FROM libros WHERE codigo = {codigo}"
     db_manager.actualizar(query)
 
 def buscar_libros_por_titulo(titulo):
@@ -33,25 +35,45 @@ def buscar_libros_por_titulo(titulo):
     libros = [Libro(codigo=row[0], titulo=row[1], precioReposicion=row[2], estado=row[3]) for row in resultados]
     return libros
 
+def buscar_libros_por_codigo(codigo):
+    query = f"SELECT count(1) FROM libros WHERE codigo = '{codigo}'"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    return resultados[0]
+
+
 # Funciones para la administración de socios
-def insertar_socio(socio):
+def buscar_socio_x_nro(numero_socio : int):
+    query = f"SELECT count(1) FROM socios where numeroSocio = {numero_socio} and borrado = 0"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    return resultados
+
+def insertar_socio(socio : Socio):
     db_manager = DatabaseManager()
     numero_socio = int(socio.numeroSocio)
     nombre = str(socio.nombre)
     query = f"INSERT INTO socios (numeroSocio, nombre, borrado) VALUES ({numero_socio}, '{nombre}', 0)"
     db_manager.actualizar(query)
 
-def actualizar_socio(socio):
+def consultar_socio(numero_socio : int):
+    query = f"SELECT * FROM socios where numeroSocio = {numero_socio} and borrado = 0"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    socios = [Socio(numeroSocio=row[0], nombre=row[1]) for row in resultados]
+    return socios
+
+def actualizar_socio(socio : Socio):
     db_manager = DatabaseManager()
     numero_socio = int(socio.numeroSocio)
     nombre = str(socio.nombre)
     query = f"UPDATE socios SET nombre = '{nombre}' WHERE numeroSocio = {numero_socio}"
     db_manager.actualizar(query)
 
-def eliminar_socio(socio):
+def eliminar_socio(socio : Socio):
     db_manager = DatabaseManager()
     numero_socio = int(socio.numeroSocio)
-    query = f"UPDATE socios SET borrado = 1 WHERE numeroSocio = {numero_socio}"
+    query = f"DELETE FROM socios WHERE numeroSocio = {numero_socio}"
     db_manager.actualizar(query)
 
 def listar_socios():
@@ -130,3 +152,6 @@ def listar_prestamos_demorados():
             "WHERE p.devuelto = 0 AND DATE('now') > DATE(p.fechaPrestamo, '+' || p.diasDevolucion || ' days')"
     resultados = db_manager.consultar(query)
     return resultados
+
+def crear_tablas():
+    db_manager = DatabaseManager()
