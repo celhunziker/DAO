@@ -35,9 +35,9 @@ def agregar_menu(ventana : Tk):
 
     menu_prestamos_devoluc.add_command(label="Registrar prestamo", command=registrar_prestamo)
     menu_prestamos_devoluc.add_command(label="Registrar devolución", command=registrar_devolucion)
+    menu_prestamos_devoluc.add_command(label="Consultar prestamos", command=consultar_prestamos)
 
     menu_reportes.add_command(label="Cantidad de libros en cada estado (tres totales)",command=generar_reporte_libros_x_estado)
-    menu_reportes.add_command(label="Sumatoria del precio de reposición de todos los libros extraviados",command=generar_reporte_sum_precio_extraviados)
     menu_reportes.add_command(label="Nombre de todos los solicitantes de un libro en particular identificado por su título",command=buscar_solic_x_titulo)
     menu_reportes.add_command(label="Listado de préstamos de un socio identificado por su número de socio",command=buscar_prestamo_x_nroSocio)
     menu_reportes.add_command(label="Listado de préstamos demorados",command=generar_reporte_prestamos_demorados)
@@ -55,6 +55,36 @@ def validar_numeros(entrada):
 def validar_numeros_coma(valor):
     # Permite solo números y una coma en el Entry
     return valor == "" or (valor.replace(",", "").replace(".", "").isdigit() and valor.count(",") <= 1)
+
+def consultar_prestamos():
+    ventana_consultar_prestamos = Tk()
+    ventana_consultar_prestamos.title("Prestamos")
+    ventana_consultar_prestamos.geometry("950x400")
+
+    label_titulo = Label(ventana_consultar_prestamos, text="Consulta de prestamos", font=("Arial bold", 12))
+    label_titulo.pack(pady=5)
+
+    columns = ("ID del prestamo", "Codigo de libro", "Título", "Numero de socio", "Socio", "Fecha prestamo", "Fecha devolucion", "Demora", "Devuelto") 
+    tree = ttk.Treeview(ventana_consultar_prestamos, columns=columns, show="headings")
+
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=100)  
+
+    prestamos = listarPrestamos()
+
+    # Llenar la tabla con datos
+    for prestamo in prestamos:
+        fechaDev = "-"
+        if prestamo[6] != None:
+            fechaDev = prestamo[6]
+        dev = "NO"
+        if prestamo[8] == 1:
+            dev = "SI"
+        tree.insert("", "end", values=(prestamo[0], prestamo[1], prestamo[2], prestamo[3], prestamo[4], prestamo[5], fechaDev, prestamo[7], dev))
+
+    # Empaquetar la tabla
+    tree.pack(padx=10, pady=10)
 
 def buscar_solic_x_titulo():
     ventana_titulo_libro = Toplevel()
@@ -226,10 +256,91 @@ def consultar_libro():
     for libro in libros:
         tree.insert("", "end", values=(libro[0], libro[1], libro[2], libro[3]))
 
+    # Configurar la selección
+    tree.bind("<ButtonRelease-1>", on_seleccion_lib)
+    
+    boton_modificar = Button(ventana_consultar_libro, text="Modificar", command=lambda: on_seleccion_lib(ventana_consultar_libro, tree, None))
+    boton_modificar.pack(side="bottom", pady=10)
+    
     # Empaquetar la tabla
     tree.pack(padx=10, pady=10)
-
     
+def abrir_ventana_modificar_lib(ventana_consultar, codigo_seleccionado):
+    # Lógica para abrir la ventana de modificación
+    # Puedes implementar una nueva ventana similar a la de registro de socios
+    ventana_modificar_libro = Toplevel()
+    ventana_modificar_libro.title("Modificar libro")
+    ventana_modificar_libro.geometry("400x300")
+
+    precio_var = StringVar()
+
+    # Configurar validación
+    validacion = ventana_modificar_libro.register(validar_numeros_coma)
+
+    label_titulo = Label(ventana_modificar_libro, text="Modificar un libro", font=("Arial bold", 12))
+    label_titulo.pack(pady=5)
+
+    libro = consultarLibro(codigo_seleccionado)
+
+    label_titulo_libro = Label(ventana_modificar_libro, text="Titulo:")
+    label_titulo_libro.pack(pady=5)
+    entry_titulo_libro = Entry(ventana_modificar_libro)
+    entry_titulo_libro.pack(pady=5)
+    label_precio_repo = Label(ventana_modificar_libro, text="Precio de reposición:")
+    label_precio_repo.pack(pady=5)
+    entry_precio_repo = Entry(ventana_modificar_libro, textvariable=precio_var, validate="key", validatecommand=(validacion, "%P"))
+    entry_precio_repo.pack(pady=5)
+    boton_modificar = Button(ventana_modificar_libro, text="Modificar", command=lambda: boton_modificar_libro(ventana_consultar, ventana_modificar_libro, codigo_seleccionado, entry_titulo_libro.get(), entry_precio_repo.get(), libro.estado))
+    boton_modificar.pack(pady=5)
+    
+    
+    ventana_modificar_libro.mainloop()
+
+def on_seleccion_lib(ventana_consultar, tree, event):
+    item_seleccionado = tree.focus()
+    if item_seleccionado:
+        codigo_seleccionado = tree.item(item_seleccionado, 'values')[0]
+        abrir_ventana_modificar_lib(ventana_consultar, codigo_seleccionado)
+
+def on_seleccion(ventana_consultar, tree, event):
+    item_seleccionado = tree.focus()
+    if item_seleccionado:
+        codigo_seleccionado = tree.item(item_seleccionado, 'values')[0]
+        abrir_ventana_modificar(ventana_consultar, codigo_seleccionado)
+
+def abrir_ventana_modificar(ventana_consultar, codigo_seleccionado):
+    # Lógica para abrir la ventana de modificación
+    # Puedes implementar una nueva ventana similar a la de registro de socios
+    ventana_modificar_socio = Toplevel()
+    ventana_modificar_socio.title("Modificar socio")
+    ventana_modificar_socio.geometry("300x150")
+
+    label_titulo = Label(ventana_modificar_socio, text="Modificar un socio", font=("Arial bold", 12))
+    label_titulo.pack(pady=5)
+
+    socio = consultarSocio(codigo_seleccionado)
+
+    label_nombre = Label(ventana_modificar_socio, text="Nombre:")
+    label_nombre.pack(pady=5)
+    entry_nombre = Entry(ventana_modificar_socio, text=socio.nombre)
+    entry_nombre.pack(pady=5)
+    boton_modificar = Button(ventana_modificar_socio, text="Modificar", command=lambda: boton_modificar_socio(ventana_consultar, ventana_modificar_socio, codigo_seleccionado, entry_nombre.get()))
+    boton_modificar.pack(pady=5)
+    
+    
+    ventana_modificar_socio.mainloop()
+    
+def boton_modificar_socio(ventana_consultar, ventana, numero, nombre):
+    if nombre:
+        modificarSocio(numero, nombre)
+        messagebox.showinfo("Éxito", "Modificado con éxito")
+        ventana.destroy()
+        ventana_consultar.detroy()
+        consultar_socios()
+    else:
+        label_error = Label(ventana, text="Ingrese un nombre")
+        label_error.pack(side="bottom", pady=10)
+        
 def eliminar_libro():
     ventana_eliminar_libro = Toplevel()
     ventana_eliminar_libro.title("Eliminar libro")
@@ -267,12 +378,19 @@ def consultar_socios():
         tree.column(col, width=150)  
 
     # Llenar la tabla con datos
-    if len(socios) > 0:
-        for socio in socios:
-            tree.insert("", "end", values=(socio[0], socio[1]))
+    for socio in socios:
+        tree.insert("", "end", values=(socio[0], socio[1]))
+
+    # Empaquetar la tabla
+    # Configurar la selección
+    tree.bind("<ButtonRelease-1>", on_seleccion)
+    
+    boton_modificar = Button(ventana_consultar_socio, text="Modificar", command=lambda: on_seleccion(ventana_consultar_socio, tree, None))
+    boton_modificar.pack(side="bottom", pady=10)
 
     # Empaquetar la tabla
     tree.pack(padx=10, pady=10)
+    
 
 def eliminar_socio():
     ventana_eliminar_socio = Toplevel()
@@ -371,7 +489,16 @@ def registrar_devolucion():
     
     ventana_registro_devolucion.mainloop()
 
-
+def boton_modificar_libro(ventana_consultar, ventana, codigo, titulo, precio, estado):
+    if titulo and precio:
+        modificarLibro(codigo, titulo, precio, estado)
+        messagebox.showinfo("Éxito", "Modificado con éxito")
+        ventana.destroy()
+        ventana_consultar.detroy()
+        consultar_libro()
+    else:
+        label_error = Label(ventana, text="Ingrese todos los datos")
+        label_error.pack(side="bottom", pady=10)
 
 def boton_registrar_libro_accion(ventana : Tk, titulo : str, precio : str, estado : str):
     try:

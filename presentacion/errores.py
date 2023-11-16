@@ -70,3 +70,11 @@ class LibroNoDisponible(Exception):
             self._codigo = codigo
             self._message = message
             super().__init__(self._message)
+            
+class NoHayDemoradosError(Exception):
+        def __init__(self,
+            codigo,
+            message="No hay prestamos demorados"):
+            self._codigo = codigo
+            self._message = message
+            super().__init__(self._message)

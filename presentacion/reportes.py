@@ -147,7 +147,7 @@ def generar_reporte_solic_de_titulo(lista_solicitantes, titulo):
 def generar_reporte_prest_demorados(lista_demorados):
 
     # Crear un documento PDF
-    doc = SimpleDocTemplate("report.pdf", pagesize=letter)
+    doc = SimpleDocTemplate("reporte_prestamos_demorados.pdf", pagesize=letter)
 
     # Crear una lista para almacenar los elementos del informe
     elements = []
@@ -159,15 +159,27 @@ def generar_reporte_prest_demorados(lista_demorados):
     elements.append(Paragraph(title, styles['Title']))
     
     # Agregar una tabla de ejemplo
-    data = lista_demorados
-    table = Table(data, colWidths=[1 * inch, 1 * inch, 1 * inch])
-    table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-    ('GRID', (0, 0), (-1, -1), 1, colors.black)]))
-    elements.append(table)
+    if lista_demorados:
+        # Estructura de la lista: [(idPrestamo, fechaPrestamo, diasDevolucion, devuelto, codigo_libro, titulo_libro, numeroSocio, nombre_socio), ...]
+        # Asegúrate de que los nombres de las columnas coincidan con la estructura de la lista
+        column_names = ["ID Prestamo", "Fecha Prestamo", "Dias Devolucion", "Devuelto", "Codigo Libro", "Titulo Libro", "Numero Socio", "Nombre Socio"]
+        
+        # Agregar datos a la tabla
+        data = [column_names] + lista_demorados
+        
+        # Crear tabla
+        table = Table(data, colWidths=[1 * inch, 1 * inch, 1 * inch, 1 * inch, 1 * inch, 1 * inch, 1 * inch, 1 * inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+        
     # Construir el informe y guardar en un archivo PDF
     doc.build(elements)
+    subprocess.Popen(["start", "reporte_prestamos_demorados.pdf"], shell=True)

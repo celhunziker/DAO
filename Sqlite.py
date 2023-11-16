@@ -2,6 +2,7 @@ from db.bdManager import DatabaseManager
 from entidades.socio import *
 from entidades.libro import *
 from entidades.prestamo import *
+from presentacion.errores import *
 
 # Funciones para la administración de libros
 def insertar_libro(titulo, precio, estado):
@@ -39,7 +40,7 @@ def consultar_libro(codigo : int):
     return libros
 
 def consultar_libros():
-    query = f"SELECT * FROM libros"
+    query = f"SELECT * FROM libros WHERE borrado = 0"
     db_manager = DatabaseManager()
     resultados = db_manager.consultar(query)
     return resultados
@@ -101,14 +102,7 @@ def eliminar_socio(socio : Socio):
     db_manager.actualizar(query)
 
 def listar_socios():
-    query = "SELECT * FROM socios"
-    db_manager = DatabaseManager()
-    resultados = db_manager.consultar(query)
-    socios = [Socio(numeroSocio=row[0], nombre=row[1]) for row in resultados]
-    return socios
-
-def listar_socios():
-    query = "SELECT * FROM socios"
+    query = "SELECT * FROM socios WHERE borrado = 0"
     db_manager = DatabaseManager()
     resultados = db_manager.consultar(query)
     return resultados
@@ -137,9 +131,15 @@ def consultar_prestamo(idPrestamo):
 
     return prestamos
 
+def consultar_prestamos():
+    query = f"SELECT p.idPrestamo, l.codigo, l.titulo, s.numeroSocio, s.nombre, p.fechaPrestamo, p.fechaDevolucion, p.diasRetrasoEnDevolucion, p.devuelto " \
+            f"FROM prestamos p INNER JOIN socios s ON s.numeroSocio = p.socio_numeroSocio " \
+            f"INNER JOIN libros l ON l.codigo = p.libro_codigo"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    return resultados
 
-
-def registrar_devolucion(prestamo_id, fecha_devolucion):
+def registrar_devolucion(prestamo_id, fecha_devolucion, codigo):
     db_manager = DatabaseManager()
 
     # Obtener el valor actual de diasRetrasoEnDevolucion
@@ -155,6 +155,10 @@ def registrar_devolucion(prestamo_id, fecha_devolucion):
                                     f"diasRetrasoEnDevolucion = {dias_retraso_en_devolucion} " \
                                     f"WHERE idPrestamo = {prestamo_id}"
         db_manager.actualizar(query_actualizar_prestamo)
+        query2 = f"UPDATE libros SET estado = 'DISPONIBLE' WHERE codigo = {codigo}"
+    
+        db_manager.actualizar(query2)
+        
     else:
         # Manejar el caso en que no se obtuvo un valor válido
         print("Error: No se pudo obtener el valor de diasRetrasoEnDevolucion.")
@@ -214,8 +218,11 @@ def listar_prestamos_demorados():
             "FROM prestamos p " \
             "INNER JOIN libros l ON p.libro_codigo = l.codigo " \
             "INNER JOIN socios s ON p.socio_numeroSocio = s.numeroSocio " \
-            "WHERE p.devuelto = 0 AND DATE('now') > DATE(p.fechaPrestamo, '+' || p.diasDevolucion || ' days')"
+            "WHERE p.devuelto = 0 AND p.diasRetraso > 0"
     resultados = db_manager.consultar(query)
+    
+    if not resultados:
+        raise NoHayDemoradosError("No hay préstamos demorados en este momento.")
     return resultados
 
 def crear_tablas():

@@ -20,6 +20,10 @@ def listarSocios():
 
 def eliminarSocio(socio : Socio):
     eliminar_socio(socio)
+    
+def listarPrestamos():
+    prestamos = consultar_prestamos()
+    return prestamos
 
 def registrarSocio(nombre_socio : str):
     numerosocio = insertar_socio(nombre_socio)
@@ -62,7 +66,7 @@ def registrarPrestamo(codigo : str, nroSocio : str, diasPrestamo : str):
     if libro.estado == "DISPONIBLE":
         idprestamo = registrar_prestamo(socio.numeroSocio, libro.codigo, fecha_actual, diasPrestamo)
         if idprestamo is not None:
-            prestamo = Prestamo(idprestamo, fecha_actual, diasPrestamo, socio, libro, 0)
+            prestamo = Prestamo(idprestamo, fecha_actual, diasPrestamo, None, socio, libro, 0)
             return prestamo
         else:
             raise LibroNoDisponible(codigo)
@@ -80,7 +84,7 @@ def registrarDevolucion(idPrestamo : str):
     prestamo = consultarPrestamo(idPrestamo)
     fecha_actual = datetime.now().date()
     if prestamo:
-        registrar_devolucion(idPrestamo,fecha_actual)
+        registrar_devolucion(idPrestamo,fecha_actual,prestamo.libro)
     else:
         raise PrestamoInexistente(idPrestamo)
 
@@ -113,3 +117,11 @@ def generar_reporte_solicitantes_de_titulo(lista_solicitantes, titulo):
 def generar_reporte_prestamos_demor():
     lista_demorados = listar_prestamos_demorados()
     generar_reporte_prest_demorados(lista_demorados) 
+    
+def modificarLibro(codigo, titulo, precio, estado):
+    libro = Libro(codigo, titulo, precio, estado)
+    actualizar_libro(libro)
+    
+def modificarSocio(numero, nombre):
+    socio = Socio(nombre, numero)
+    actualizar_socio(socio)

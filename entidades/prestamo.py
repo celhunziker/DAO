@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 
 
 class Prestamo:
-    def __init__(self, idPrestamo, fechaPrestamo, diasDevolucion, devuelto, numeroSocio, codigo):
+    def __init__(self, idPrestamo, fechaPrestamo, diasDevolucion, diasRetraso, devuelto, numeroSocio, codigo):
         self._idPrestamo = idPrestamo
         self._fechaPrestamo = fechaPrestamo
         self._diasDevolucion = diasDevolucion
         self._socio = numeroSocio
         self._libro = codigo
+        self._diasRetraso = diasRetraso
         self._devuelto = devuelto
         
     @property
