@@ -64,8 +64,10 @@ def registrarPrestamo(codigo : str, nroSocio : str, diasPrestamo : str):
         if idprestamo is not None:
             prestamo = Prestamo(idprestamo, fecha_actual, diasPrestamo, socio, libro, 0)
             return prestamo
+        else:
+            raise LibroNoDisponible(codigo)
     else:
-        raise LibroNoDisponible
+        raise LibroNoDisponible(codigo)
     
 def consultarPrestamo(idPrestamo : str):
     lista_prestamos = consultar_prestamo(idPrestamo)
@@ -84,15 +86,16 @@ def registrarDevolucion(idPrestamo : str):
 
 def generar_reporte_prest_socios(nroSocio: str):
     prestamos = listar_prestamos_por_socio(nroSocio)
-    generar_reporte_prestamos_x_socio(prestamos, nroSocio)
+    nombreSocio = consultar_nombre_socio(nroSocio)
+    generar_reporte_prestamos_x_socio(prestamos, nroSocio, nombreSocio)
 
 
 def generar_reporte_libros_x_est():
     lista = listar_cantidad_libros_estado()
     generar_reporte_libros_x_estado(lista)
 
-def generar_reporte_sum_precio_extraviados():
-    sumatoria = sumatoria_precio_reposicion_librExtraviados()
+def generar_reporte_sum_precio_extra():
+    sumatoria = sumatoria_precio_reposicion_librExtraviados() or 0
     reporte_precio_extraviados(sumatoria)
     
 def buscar_solicitantes_x_libro(titulo):
@@ -102,11 +105,11 @@ def buscar_solicitantes_x_libro(titulo):
         listaSolicitantes = solicitantes_por_titulo_libro(titulo)
         return listaSolicitantes
     else:
-        raise LibroInexistente
+        raise LibroInexistente(titulo)
 
 def generar_reporte_solicitantes_de_titulo(lista_solicitantes, titulo):
     generar_reporte_solic_de_titulo(lista_solicitantes, titulo)
 
 def generar_reporte_prestamos_demor():
     lista_demorados = listar_prestamos_demorados()
-    generar_reporte_prest_demorados(lista_demorados)
+    generar_reporte_prest_demorados(lista_demorados) 

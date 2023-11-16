@@ -8,11 +8,13 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.platypus.tables import Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
+import subprocess
+
 
 
 def generar_reporte_libros_x_estado(lista):
     # Crear un documento PDF
-    doc = SimpleDocTemplate("informe_con_grafico.pdf", pagesize=letter)
+    doc = SimpleDocTemplate("reporte_libros_por_estado.pdf", pagesize=letter)
     # Crear una lista de elementos para agregar al informe
     elements = []
 
@@ -40,13 +42,13 @@ def generar_reporte_libros_x_estado(lista):
     # Cerrar el documento PDF
     doc.build(elements)
 
-    import subprocess
-    subprocess.Popen(["grafico_reportlab.pdf"], shell=True)
+
+    subprocess.Popen(["start", "reporte_libros_por_estado.pdf"], shell=True)
 
 
 def reporte_precio_extraviados(sumatoria):
     # Crear un documento PDF
-    doc = SimpleDocTemplate("report.pdf", pagesize=letter)
+    doc = SimpleDocTemplate("reporte_precio_extraviados.pdf", pagesize=letter)
 
     # Crear una lista para almacenar los elementos del informe
     elements = []
@@ -59,8 +61,7 @@ def reporte_precio_extraviados(sumatoria):
     elements.append(Paragraph(title, styles['Title']))
 
     # Agregar una tabla de ejemplo
-    data = ["Total sumatoria", sumatoria]
-    
+    data = [["Total sumatoria", sumatoria]]
     table = Table(data, colWidths=[1 * inch, 1 * inch, 1 * inch])
     table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -73,27 +74,32 @@ def reporte_precio_extraviados(sumatoria):
 
     # Construir el informe y guardar en un archivo PDF
     doc.build(elements)
+    
+    
+    subprocess.Popen(["start", "reporte_precio_extraviados.pdf"], shell=True)
 
-def generar_reporte_prestamos_x_socio(listaPrestamos: list, nroSocio: str):
+def generar_reporte_prestamos_x_socio(listaPrestamos: list, nroSocio: str, nombreSocio : str):
     # Crear un documento PDF
-    doc = SimpleDocTemplate("report.pdf", pagesize=letter)
+    doc = SimpleDocTemplate("reporte_prestamos_socio.pdf", pagesize=letter)
 
     # Crear una lista para almacenar los elementos del informe
     elements = []
 
     # Crear estilos para el informe
     styles = getSampleStyleSheet()
+    
 
     # Agregar un título
-    title = "Prestamos solicitados por el socio: " + nroSocio
+    title = "Prestamos solicitados por el socio: " + nroSocio + "- Llamado: " + nombreSocio
     elements.append(Paragraph(title, styles['Title']))
 
     # Agregar una tabla de ejemplo
-    #for lista in listaPrestamos:
-    data = listaPrestamos
-        #data.append([lista[0], lista[1], lista[3], lista[4], lista[5], lista[6], lista[7]])
-    
-    table = Table(data, colWidths=[1 * inch, 1 * inch, 1 * inch])
+    data = [['Código Prestamo', 'Fecha Prestamo', 'Codigo Libro', 'Titulo Libro']]
+    for lista in listaPrestamos:
+        # Modificar la línea a continuación para incluir solo las columnas deseadas
+        data.append([lista[0], lista[1], lista[3], lista[4]])
+
+    table = Table(data, colWidths=[1 * inch, 1 * inch, 1 * inch, 1 * inch, 1 * inch])
     table.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -105,6 +111,8 @@ def generar_reporte_prestamos_x_socio(listaPrestamos: list, nroSocio: str):
 
     # Construir el informe y guardar en un archivo PDF
     doc.build(elements)
+    
+    subprocess.Popen(["start", "reporte_prestamos_socio.pdf"], shell=True)
 
 def generar_reporte_solic_de_titulo(lista_solicitantes, titulo):
     
@@ -136,7 +144,7 @@ def generar_reporte_solic_de_titulo(lista_solicitantes, titulo):
     # Construir el informe y guardar en un archivo PDF
     doc.build(elements)
 
-def generar_reporte_prest_demorados(lista_demorados)
+def generar_reporte_prest_demorados(lista_demorados):
 
     # Crear un documento PDF
     doc = SimpleDocTemplate("report.pdf", pagesize=letter)

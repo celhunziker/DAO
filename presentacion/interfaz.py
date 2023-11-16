@@ -3,7 +3,6 @@ from tkinter import messagebox, ttk
 from logica import *
 
 
-
 def inicio():
     ventana = Tk()
     ventana.title("Gestión de biblioteca")
@@ -116,7 +115,7 @@ def generar_reporte_libros_x_estado():
     generar_reporte_libros_x_est()
 
 def generar_reporte_sum_precio_extraviados():
-    generar_reporte_sum_precio_extraviados()
+    generar_reporte_sum_precio_extra()
 
 def generar_reporte_prestamos_demorados():
     generar_reporte_prestamos_demor()
@@ -127,15 +126,50 @@ def buscar_prestamo_x_nroSocio():
     ventana_prestamo_socio.geometry("500x200")
     
     label_titulo = Label(ventana_prestamo_socio, text="Prestamos de un socio determinado", font=("Arial bold", 12))
-    label_titulo.grid(column=0,row=0)
+    label_titulo.grid(column=0, row=0)
+    
+    nro_var = StringVar()
 
     label_nroSocio = Label(ventana_prestamo_socio, text="Numero de Socio:")
-    label_nroSocio.id(column=0,row=2)
-    entry_nroSocio = Entry(ventana_prestamo_socio)
-    entry_nroSocio.grid(column=1,row=2) 
+    label_nroSocio.grid(column=0, row=2)
     
-    boton_nroSocio = Button(ventana_prestamo_socio, text="Consultar", command= lambda: generar_reporte_prestamo_x_socio(entry_nroSocio.get()))
-    boton_nroSocio.grid(column=1,row=6)
+    entry_nroSocio = Entry(ventana_prestamo_socio, textvariable=nro_var)
+    entry_nroSocio.grid(column=1, row=2)     
+    
+    boton_nroSocio = Button(ventana_prestamo_socio, text="Consultar", command=lambda: generar_reporte_prestamo_x_socio(entry_nroSocio.get()))
+    boton_nroSocio.grid(column=1, row=6)
+    
+'''
+def registrar_libro():
+    ventana_registrar_libro = Toplevel()
+    ventana_registrar_libro.title("Registrar libro")
+    ventana_registrar_libro.geometry("500x200")
+    
+    label_titulo = Label(ventana_registrar_libro, text="Registrar un libro", font=("Arial bold", 12))
+    label_titulo.grid(column=0,row=0)
+
+    precio_var = StringVar()
+
+    # Configurar validación
+    validacion = ventana_registrar_libro.register(validar_numeros_coma)
+
+    label_titulo_libro = Label(ventana_registrar_libro, text="Titulo:")
+    label_titulo_libro.grid(column=0,row=2)
+    entry_titulo_libro = Entry(ventana_registrar_libro)
+    entry_titulo_libro.grid(column=1,row=2)
+    label_precio_repo = Label(ventana_registrar_libro, text="Precio de reposición:")
+    label_precio_repo.grid(column=0,row=3)
+    entry_precio_repo = Entry(ventana_registrar_libro, textvariable=precio_var, validate="key", validatecommand=(validacion, "%P"))
+    entry_precio_repo.grid(column=1,row=3)
+    label_estado = Label(ventana_registrar_libro, text="Estado:")
+    label_estado.grid(column=0,row=4)
+    estados = ["DISPONIBLE", "PRESTADO", "EXTRAVIADO"]
+    combo_estado = ttk.Combobox(ventana_registrar_libro, values=estados, state="readonly")
+    combo_estado.grid(column=1,row=4)
+
+    boton_registrar_libro = Button(ventana_registrar_libro, text="Registrar", command= lambda: boton_registrar_libro_accion(ventana_registrar_libro, entry_titulo_libro.get(), entry_precio_repo.get(), combo_estado.get()))
+    boton_registrar_libro.grid(column=1,row=6)
+'''
 
 
 def generar_reporte_prestamo_x_socio(nroSocio: str):
@@ -405,14 +439,18 @@ def boton_registrar_socio(ventana, nombre):
 def boton_registrar_prestamo_accion(ventana : Tk, codigoLibro: str, nroSocio : str, dias : str):
     try:
         if codigoLibro and nroSocio and dias:
-                registrarPrestamo(codigoLibro, nroSocio, dias)
-                mostrar_cartel_exitoso()
-                ventana.destroy()
+                try:
+                    registrarPrestamo(codigoLibro, nroSocio, dias)
+                    mostrar_cartel_exitoso()
+                    ventana.destroy()
+                except LibroNoDisponible: 
+                    messagebox.showerror("Error","El libro no esta disponible")
         else:
                 label_faltan_datos = Label(ventana, text="Completar todos los datos", fg="red")
                 label_faltan_datos.grid(column=0,row=4)
-    except NroSocioInxistente or LibroInexistente:
+    except (NroSocioInxistente, LibroInexistente,) as e:
             messagebox.showerror("Error","El socio o libro no existen")
+    
 
 def boton_registrar_devolucion_accion(ventana : Tk, idPrestamo: str):
     try:

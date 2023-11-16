@@ -89,7 +89,7 @@ class DatabaseManager:
             socio_numeroSocio INTEGER, 
             libro_codigo INTEGER, 
             borrado INTEGER,
-            diasRetrasoEnDevolucion INTEGER
+            diasRetrasoEnDevolucion INTEGER,
             FOREIGN KEY (socio_numeroSocio) REFERENCES socios (numeroSocio),
             FOREIGN KEY (libro_codigo) REFERENCES libros (codigo))''')
         trigger_sql = '''
@@ -98,7 +98,7 @@ class DatabaseManager:
         FOR EACH ROW
         BEGIN
             UPDATE prestamos
-            SET diasRetrasoEnDevolucion = CASE
+            SET diasRetraso = CASE
                 WHEN NEW.fechaPrestamo + NEW.diasDevolucion < CURRENT_DATE THEN 
                     CASE
                         WHEN CAST(CURRENT_DATE - (NEW.fechaPrestamo + NEW.diasDevolucion) AS INTEGER) < 0 THEN 0
@@ -116,7 +116,7 @@ class DatabaseManager:
         FOR EACH ROW
         BEGIN
             UPDATE prestamos
-                SET diasRetrasoEnDevolucion = CASE
+                SET diasRetraso = CASE
                     WHEN NEW.fechaPrestamo + NEW.diasDevolucion < CURRENT_DATE THEN 
                         CASE
                             WHEN CAST(CURRENT_DATE - (NEW.fechaPrestamo + NEW.diasDevolucion) AS INTEGER) < 0 THEN 0

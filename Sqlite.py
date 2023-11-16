@@ -80,6 +80,13 @@ def consultar_socio(numero_socio : int):
     socios = [Socio(numeroSocio=row[0], nombre=row[1]) for row in resultados]
     return socios
 
+def consultar_nombre_socio(numero_socio : int):
+    query = f"SELECT nombre FROM socios where numeroSocio = {numero_socio} and borrado = 0"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    socios = resultados[0][0]
+    return socios
+
 def actualizar_socio(socio : Socio):
     db_manager = DatabaseManager()
     numero_socio = int(socio.numeroSocio)
@@ -111,8 +118,9 @@ def registrar_prestamo(socio_id, libro_id, fecha_prestamo, dias_devolucion):
     db_manager = DatabaseManager()
     query = f"INSERT INTO prestamos (socio_numeroSocio, libro_codigo, fechaPrestamo, diasDevolucion, devuelto, borrado) " \
             f"VALUES ({int(socio_id)}, {int(libro_id)}, '{fecha_prestamo}', {int(dias_devolucion)}, 0, 0)"
-    query2 = f"UPDATE libros SET estado = PRESTADO where codigo = {libro_id}
     db_manager.actualizar(query)
+    query2 = f"UPDATE libros SET estado = 'PRESTADO' WHERE codigo = {libro_id}"
+    
     db_manager.actualizar(query2)
     idPrestamo = db_manager.obtener_ultimo_id_insertado_prestamo()
     return idPrestamo
@@ -168,10 +176,17 @@ def sumatoria_precio_reposicion_librExtraviados():
     db_manager = DatabaseManager()
     query = "SELECT SUM(precioReposicion) AS sumatoria FROM libros WHERE estado = 'Extraviado'"
     resultados = db_manager.consultar(query)
-    return resultados
 
+    # Verificar que se obtuvo un resultado válido
+    if resultados and resultados[0] and resultados[0][0] is not None:
+        sumatoria = resultados[0][0]
+        return sumatoria
+    else:
+        return 0  
+    
 def solicitantes_por_titulo_libro(titulo):
     db_manager = DatabaseManager()
+    # Convertir el título a minúsculas
     query = f"SELECT s.numeroSocio, s.nombre FROM socios s " \
             f"INNER JOIN prestamos p ON s.numeroSocio = p.socio_numeroSocio " \
             f"INNER JOIN libros l ON p.libro_codigo = l.codigo " \
@@ -181,11 +196,14 @@ def solicitantes_por_titulo_libro(titulo):
 
 def listar_prestamos_por_socio(numeroSocio):
     db_manager = DatabaseManager()
-    query = f"SELECT p.idPrestamo, p.fechaPrestamo, p.diasDevolucion, p.devuelto, " \
-            f"l.codigo AS codigo_libro, l.titulo AS titulo_libro " \
+    query = f"SELECT p.idPrestamo AS 'Código Prestamo', " \
+            f"p.fechaPrestamo AS 'Fecha Prestamo', " \
+            f"p.diasRetrasoEnDevolucion AS 'Dias Atraso', " \
+            f"l.codigo AS 'Codigo Libro', " \
+            f"l.titulo AS 'Titulo Libro' " \
             f"FROM prestamos p " \
             f"INNER JOIN libros l ON p.libro_codigo = l.codigo " \
-            f"WHERE p.socio_numeroSocio = {numeroSocio}"
+            f"WHERE p.socio_numeroSocio = {numeroSocio} AND p.borrado = 0"
     resultados = db_manager.consultar(query)
     return resultados
 
