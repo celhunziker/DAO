@@ -37,11 +37,11 @@ def agregar_menu(ventana : Tk):
     menu_prestamos_devoluc.add_command(label="Registrar prestamo", command=registrar_prestamo)
     menu_prestamos_devoluc.add_command(label="Registrar devolución", command=registrar_devolucion)
 
-    menu_reportes.add_command(label="Cantidad de libros en cada estado (tres totales)",command=x)
-    menu_reportes.add_command(label="Sumatoria del precio de reposición de todos los libros extraviados",command=x)
-    menu_reportes.add_command(label="Nombre de todos los solicitantes de un libro en particular identificado por su título",command=x)
-    menu_reportes.add_command(label="Listado de préstamos de un socio identificado por su número de socio",command=x)
-    menu_reportes.add_command(label="Listado de préstamos demorados",command=x)
+    menu_reportes.add_command(label="Cantidad de libros en cada estado (tres totales)",command=generar_reporte_libros_x_estado)
+    menu_reportes.add_command(label="Sumatoria del precio de reposición de todos los libros extraviados",command=generar_reporte_sum_precio_extraviados)
+    menu_reportes.add_command(label="Nombre de todos los solicitantes de un libro en particular identificado por su título",command=buscar_solic_x_titulo)
+    menu_reportes.add_command(label="Listado de préstamos de un socio identificado por su número de socio",command=buscar_prestamo_x_nroSocio)
+    menu_reportes.add_command(label="Listado de préstamos demorados",command=generar_reporte_prestamos_demorados)
 
 def x():
     pass
@@ -53,6 +53,95 @@ def validar_numeros(entrada):
     else:
         return False
 
+def validar_numeros_coma(valor):
+    # Permite solo números y una coma en el Entry
+    return valor == "" or (valor.replace(",", "").replace(".", "").isdigit() and valor.count(",") <= 1)
+
+def buscar_solic_x_titulo():
+    ventana_titulo_libro = Toplevel()
+    ventana_titulo_libro.title("Reporte de solicitantes de un libro")
+    ventana_titulo_libro.geometry("500x500")
+    
+    label_titulo = Label(ventana_titulo_libro, text="Reporte de solicitantes", font=("Arial bold", 12))
+    label_titulo.pack(pady=5)
+
+    label_titulo_libro = Label(ventana_titulo_libro, text="Titulo:")
+    label_titulo_libro.pack(pady=5)
+    entry_titulo_libro = Entry(ventana_titulo_libro)
+    entry_titulo_libro.pack(pady=5)
+    
+    boton_titulo_libro = Button(ventana_titulo_libro, text="Consultar", command= lambda: mostrar_solicitantes(ventana_titulo_libro, entry_titulo_libro.get()))
+    boton_titulo_libro.pack(pady=5)
+
+    boton_generar_reporte = Button(ventana_titulo_libro, text="Generar reporte", command= lambda: generar_reporte_solic_x_titulo(entry_titulo_libro.get()))
+    boton_generar_reporte.pack(side= "bottom", pady=10)
+
+def generar_reporte_solic_x_titulo(titulo):
+    if titulo:
+        lista_solicitantes = buscar_solicitantes(titulo)
+        if len(lista_solicitantes) > 0:
+            generar_reporte_solic_de_titulo(lista_solicitantes, titulo)
+
+def buscar_solicitantes(titulo : str):
+    listaSolicitantes = buscar_solicitantes_x_libro(titulo)
+    return listaSolicitantes
+
+def mostrar_solicitantes(ventana : Tk, titulo : str):
+    if titulo:
+        try:
+            listaSolicitantes = buscar_solicitantes(titulo)
+            if len(listaSolicitantes) > 0:
+                columns = ("Número de Socio", "Nombre")
+                tree = ttk.Treeview(ventana, columns=columns, show="headings")
+
+                for col in columns:
+                    tree.heading(col, text=col)
+                    tree.column(col, width=150)  
+
+                    # Llenar la tabla con datos
+                    for socio in listaSolicitantes:
+                        tree.insert("", "end", values=(socio[0], socio[1]))
+
+                    # Empaquetar la tabla
+                    tree.pack(padx=10, pady=10)
+
+                    return listaSolicitantes
+        except LibroInexistente:
+            messagebox.showerror("Error", f"No existen libros registrados con el titulo '{titulo}'")
+    else:
+        label_faltan_datos = Label(ventana, text="Ingresar un titulo", fg="red")
+        label_faltan_datos.pack(side="bottom",pady=10)
+
+def generar_reporte_libros_x_estado():
+    generar_reporte_libros_x_est()
+
+def generar_reporte_sum_precio_extraviados():
+    generar_reporte_sum_precio_extraviados()
+
+def generar_reporte_prestamos_demorados():
+    generar_reporte_prestamos_demor()
+
+def buscar_prestamo_x_nroSocio():
+    ventana_prestamo_socio = Toplevel()
+    ventana_prestamo_socio.title("Reporte de Prestamos de un socio")
+    ventana_prestamo_socio.geometry("500x200")
+    
+    label_titulo = Label(ventana_prestamo_socio, text="Prestamos de un socio determinado", font=("Arial bold", 12))
+    label_titulo.grid(column=0,row=0)
+
+    label_nroSocio = Label(ventana_prestamo_socio, text="Numero de Socio:")
+    label_nroSocio.id(column=0,row=2)
+    entry_nroSocio = Entry(ventana_prestamo_socio)
+    entry_nroSocio.grid(column=1,row=2) 
+    
+    boton_nroSocio = Button(ventana_prestamo_socio, text="Consultar", command= lambda: generar_reporte_prestamo_x_socio(entry_nroSocio.get()))
+    boton_nroSocio.grid(column=1,row=6)
+
+
+def generar_reporte_prestamo_x_socio(nroSocio: str):
+    generar_reporte_prest_socios(nroSocio)
+
+
 def registrar_libro():
     ventana_registrar_libro = Toplevel()
     ventana_registrar_libro.title("Registrar libro")
@@ -61,13 +150,18 @@ def registrar_libro():
     label_titulo = Label(ventana_registrar_libro, text="Registrar un libro", font=("Arial bold", 12))
     label_titulo.grid(column=0,row=0)
 
+    precio_var = StringVar()
+
+    # Configurar validación
+    validacion = ventana_registrar_libro.register(validar_numeros_coma)
+
     label_titulo_libro = Label(ventana_registrar_libro, text="Titulo:")
     label_titulo_libro.grid(column=0,row=2)
     entry_titulo_libro = Entry(ventana_registrar_libro)
     entry_titulo_libro.grid(column=1,row=2)
     label_precio_repo = Label(ventana_registrar_libro, text="Precio de reposición:")
     label_precio_repo.grid(column=0,row=3)
-    entry_precio_repo = Entry(ventana_registrar_libro)
+    entry_precio_repo = Entry(ventana_registrar_libro, textvariable=precio_var, validate="key", validatecommand=(validacion, "%P"))
     entry_precio_repo.grid(column=1,row=3)
     label_estado = Label(ventana_registrar_libro, text="Estado:")
     label_estado.grid(column=0,row=4)
@@ -80,23 +174,27 @@ def registrar_libro():
     
 def consultar_libro():
     ventana_consultar_libro = Toplevel()
-    ventana_consultar_libro.title("Consultar socio")
-    ventana_consultar_libro.geometry("300x150")
+    ventana_consultar_libro.title("Consultar libros")
+    ventana_consultar_libro.geometry("600x300")
 
-    label_titulo = Label(ventana_consultar_libro, text="Consultar un libro", font=("Arial bold", 12))
-    label_titulo.grid(column=0,row=0)
+    label_titulo = Label(ventana_consultar_libro, text="Consultar libros", font=("Arial bold", 12))
+    label_titulo.pack(pady=10)
 
-    # Variable para la entrada
-    numero_var = StringVar()
-    validacion = ventana_consultar_libro.register(validar_numeros)
-    
-    label_codigo = Label(ventana_consultar_libro, text="Codigo de libro:")
-    label_codigo.grid(column=0,row=2)
-    entry_codigo = Entry(ventana_consultar_libro, textvariable=numero_var, validate="key", validatecommand=(validacion, "%P"))
-    entry_codigo.grid(column=1,row=2)
+    libros = listarLibros()
+    columns = ("Codigo de libro", "Título", "Precio de reposición", "Estado")
+    tree = ttk.Treeview(ventana_consultar_libro, columns=columns, show="headings")
 
-    boton_consultar_libro = Button(ventana_consultar_libro, text="Consultar", command=lambda: boton_consultar_libro_accion(ventana_consultar_libro, entry_codigo.get()))
-    boton_consultar_libro.grid(column=0, row=3)
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=150)  
+
+    # Llenar la tabla con datos
+    for libro in libros:
+        tree.insert("", "end", values=(libro[0], libro[1], libro[2], libro[3]))
+
+    # Empaquetar la tabla
+    tree.pack(padx=10, pady=10)
+
     
 def eliminar_libro():
     ventana_eliminar_libro = Toplevel()
@@ -123,20 +221,24 @@ def consultar_socios():
     ventana_consultar_socio.title("Consultar socio")
     ventana_consultar_socio.geometry("300x150")
 
-    label_titulo = Label(ventana_consultar_socio, text="Consultar un socio", font=("Arial bold", 12))
-    label_titulo.grid(column=0,row=0)
+    label_titulo = Label(ventana_consultar_socio, text="Consultar socios", font=("Arial bold", 12))
+    label_titulo.pack(pady=10)
 
-    # Variable para la entrada
-    numero_var = StringVar()
-    validacion = ventana_consultar_socio.register(validar_numeros)
-    
-    label_numero_socio = Label(ventana_consultar_socio, text="Numero de socio:")
-    label_numero_socio.grid(column=0,row=2)
-    entry_numero_socio = Entry(ventana_consultar_socio, textvariable=numero_var, validate="key", validatecommand=(validacion, "%P"))
-    entry_numero_socio.grid(column=1,row=2)
+    socios = listarSocios()
+    columns = ("Codigo de socio", "Nombre")
+    tree = ttk.Treeview(ventana_consultar_socio, columns=columns, show="headings")
 
-    boton_consultar = Button(ventana_consultar_socio, text="Consultar", command=lambda: boton_consultar_socio(ventana_consultar_socio, entry_numero_socio.get()))
-    boton_consultar.grid(column=0, row=3)
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=150)  
+
+    # Llenar la tabla con datos
+    if len(socios) > 0:
+        for socio in socios:
+            tree.insert("", "end", values=(socio[0], socio[1]))
+
+    # Empaquetar la tabla
+    tree.pack(padx=10, pady=10)
 
 def eliminar_socio():
     ventana_eliminar_socio = Toplevel()

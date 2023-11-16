@@ -62,3 +62,11 @@ class PrestamoInexistente(Exception):
         self._codigo = codigo
         self._message = message
         super().__init__(self._message)
+
+class LibroNoDisponible(Exception):
+        def __init__(self,
+            codigo,
+            message="El libro no está disponible"):
+            self._codigo = codigo
+            self._message = message
+            super().__init__(self._message)

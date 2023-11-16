@@ -38,6 +38,12 @@ def consultar_libro(codigo : int):
     libros = [Libro(codigo=row[0], titulo=row[1], precioReposicion=row[2], estado=row[3]) for row in resultados]
     return libros
 
+def consultar_libros():
+    query = f"SELECT * FROM libros"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    return resultados
+
 def buscar_libros_por_titulo(titulo):
     query = f"SELECT * FROM libros WHERE titulo = '{titulo}'"
     db_manager = DatabaseManager()
@@ -94,15 +100,23 @@ def listar_socios():
     socios = [Socio(numeroSocio=row[0], nombre=row[1]) for row in resultados]
     return socios
 
+def listar_socios():
+    query = "SELECT * FROM socios"
+    db_manager = DatabaseManager()
+    resultados = db_manager.consultar(query)
+    return resultados
+
 # Funciones para la registración de préstamos y devoluciones
 def registrar_prestamo(socio_id, libro_id, fecha_prestamo, dias_devolucion):
     db_manager = DatabaseManager()
     query = f"INSERT INTO prestamos (socio_numeroSocio, libro_codigo, fechaPrestamo, diasDevolucion, devuelto, borrado) " \
             f"VALUES ({int(socio_id)}, {int(libro_id)}, '{fecha_prestamo}', {int(dias_devolucion)}, 0, 0)"
+    query2 = f"UPDATE libros SET estado = PRESTADO where codigo = {libro_id}
     db_manager.actualizar(query)
-    idPrestamo = db_manager.obtener_ultimo_id_insertado_prestamos()
+    db_manager.actualizar(query2)
+    idPrestamo = db_manager.obtener_ultimo_id_insertado_prestamo()
     return idPrestamo
-    
+
 def consultar_prestamo(idPrestamo):
     query = f"SELECT * FROM prestamos where idPrestamo = {idPrestamo} and borrado = 0"
     db_manager = DatabaseManager()
